@@ -1,0 +1,24 @@
+language: go
+go:
+  - 1.7
+script:
+  - make build
+  - make test
+
+before_deploy: make release-build
+deploy:
+  provider: releases
+  api_key:
+    secure: XrlBDTA5GVBrHsGeICH/Ag8ks14ApjJYcqoj1CHitAfmQvAy7w8OmQiybjzUuaIpqZHqgYXaqnlf6cgseyiTqdrqd4GY7+gddVTV6RaJhjYXJkUca+OpF9yzEmseDDtfW4pdBewYs5yb3+3yoLN9mbkMQ6EtlF76yqXUeap9tWXotqEDSSuNtI4tV3Yi0SOapr0MLJOHFnsSQ+x+8qj+Zbp8M2f1SwQ/yMLIKhyyYZutqC7z/6giGWIsxzJVsN91lgndjpM2pTeF3TT2JC63nhiWoqp4n1NlQUKa1Fro382N6iqzreXsZBBcZAvXRzNB4QAbMSZXdYIUARYSSmTi9hvpGM7HPpVF0EXJ59UqzugkWhGC4cPwjFnb1o+br9ckEYO+ZLJdHFXd0H4Mwv0plxKQhzuD+EiolHDwgTa1WIrfZOBVPITvroOQRdzyCSGrciVxZWTl7PixuCSxIPGTkCSndQe53pgJyJmvM7R+nzsa0o1tL9+9c7TNv8g0/gadRHpfZszy4qIBy5hX+fT00NSDAnGnNSLtjVal1rayE2hPWh3xQYUhSgz4UhzqVkHhdYz8z+vvEQCEY9geAYma8dG6k/uunAoOnz/QehRg3GLJw8UfnmbEuPwBp43bdLXn0nZ/xL3NqGJtY3Dw3qfy4e9KJ3XHEbsxvS//FNZlfoA=
+  file:
+    - ipmi_exporter_darwin_amd64
+    - ipmi_exporter_freebsd_386
+    - ipmi_exporter_freebsd_amd64
+    - ipmi_exporter_linux_386
+    - ipmi_exporter_linux_amd64
+    - ipmi_exporter_linux_arm
+    - ipmi_exporter_linux_arm64
+    - ipmi_exporter_windows_386.exe
+    - ipmi_exporter_windows_amd64.exe
+  on:
+    repo: lovoo/ipmi_exporter
