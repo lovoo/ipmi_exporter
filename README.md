@@ -1,6 +1,6 @@
 # IPMI Exporter
 
-[![GoDoc](https://godoc.org/github.com/lovoo/ipmi_exporter?status.svg)](https://godoc.org/github.com/lovoo/ipmi_exporter)
+[![GoDoc](https://godoc.org/github.com/lovoo/ipmi_exporter?status.svg)](https://godoc.org/github.com/lovoo/ipmi_exporter) [![Build Status](https://travis-ci.org/lovoo/ipmi_exporter.svg?branch=master)](https://travis-ci.org/lovoo/ipmi_exporter)
 
 IPMI Exporter for prometheus.io, written in Go.
 

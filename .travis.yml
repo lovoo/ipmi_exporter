@@ -22,3 +22,4 @@ deploy:
     - ipmi_exporter_windows_amd64.exe
   on:
     repo: lovoo/ipmi_exporter
+    tags: true
