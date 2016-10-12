@@ -1,15 +1,12 @@
 package main
 
 import (
-	"log"
-	"time"
-
 	"encoding/csv"
-	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -24,8 +21,8 @@ type metric struct {
 // Exporter implements the prometheus.Collector interface. It exposes the metrics
 // of a ipmi node.
 type Exporter struct {
-	IpmiBinary   string
-	Waitgroup    *sync.WaitGroup
+	IpmiBinary string
+
 	metrics      map[string]*prometheus.GaugeVec
 	duration     prometheus.Gauge
 	totalScrapes prometheus.Counter
@@ -33,10 +30,9 @@ type Exporter struct {
 }
 
 // NewExporter instantiates a new ipmi Exporter.
-func NewExporter(ipmiBinary string, wg *sync.WaitGroup) *Exporter {
+func NewExporter(ipmiBinary string) *Exporter {
 	e := Exporter{
 		IpmiBinary: ipmiBinary,
-		Waitgroup:  wg,
 		namespace:  "ipmi",
 		duration: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: *namespace,
@@ -55,14 +51,12 @@ type error interface {
 	Error() string
 }
 
-func executeCommand(cmd string, wg *sync.WaitGroup) (string, error) {
+func executeCommand(cmd string) (string, error) {
 	parts := strings.Fields(cmd)
 	out, err := exec.Command(parts[0], parts[1]).Output()
 	if err != nil {
-		fmt.Println("error occured")
-		fmt.Printf("%s", err)
+		log.Printf("error while calling ipmitool: %v", err)
 	}
-	wg.Done()
 	return string(out), err
 }
 
@@ -154,18 +148,14 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) collect() {
-	e.Waitgroup.Add(1)
-
 	now := time.Now().UnixNano()
 
-	output, err := executeCommand(e.IpmiBinary, e.Waitgroup)
+	output, err := executeCommand(e.IpmiBinary)
 	splitted, err := splitAoutput(string(output))
 	convertedOutput, err := convertOutput(splitted)
 	createMetrics(e, convertedOutput)
 
 	e.duration.Set(float64(time.Now().UnixNano()-now) / 1000000000)
-
-	e.Waitgroup.Wait()
 	if err != nil {
 		log.Printf("could not retrieve ipmi metrics: %v", err)
 		return

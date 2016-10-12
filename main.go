@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -18,9 +17,7 @@ var (
 
 func main() {
 	flag.Parse()
-	var wg sync.WaitGroup
-
-	prometheus.MustRegister(NewExporter(*ipmiBinary, &wg))
+	prometheus.MustRegister(NewExporter(*ipmiBinary))
 
 	log.Printf("Starting Server: %s", *listenAddress)
 	handler := prometheus.Handler()
