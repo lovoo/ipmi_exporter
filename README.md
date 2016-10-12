@@ -6,7 +6,7 @@ IPMI Exporter for prometheus.io, written in Go.
 
 ## Requirements
 
-	* ipmitool
+* ipmitool
 
 ## Docker Usage
 
