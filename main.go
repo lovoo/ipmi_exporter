@@ -11,7 +11,7 @@ import (
 var (
 	listenAddress = flag.String("web.listen", ":9289", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.path", "/metrics", "Path under which to expose metrics.")
-	ipmiBinary    = flag.String("ipmi.path", "/usr/local/bin/ipmitool sensor", "Path to the ipmi binary")
+	ipmiBinary    = flag.String("ipmi.path", "ipmitool", "Path to the ipmi binary")
 	namespace     = flag.String("namespace", "ipmi", "Namespace for the IPMI metrics.")
 )
 

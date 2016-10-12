@@ -135,7 +135,7 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) collect() {
-	output, err := executeCommand(e.IpmiBinary)
+	output, err := executeCommand(e.IpmiBinary + " sensor")
 	if err != nil {
 		log.Errorln(err)
 	}
