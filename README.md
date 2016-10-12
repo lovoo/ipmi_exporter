@@ -2,7 +2,11 @@
 
 [![GoDoc](https://godoc.org/github.com/lovoo/ipmi_exporter?status.svg)](https://godoc.org/github.com/lovoo/ipmi_exporter)
 
-Ipmi exporter for prometheus.io, written in go.
+IPMI Exporter for prometheus.io, written in Go.
+
+## Requirements
+
+	* ipmitool
 
 ## Docker Usage
 
@@ -10,8 +14,7 @@ Ipmi exporter for prometheus.io, written in go.
 
 ## Building
 
-    go get -u github.com/lovoo/ipmi_exporter
-    go install github.com/lovoo/ipmi_exporter
+    make build
 
 ## Contributing
 

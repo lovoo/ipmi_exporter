@@ -1,17 +1,13 @@
 package main
 
 import (
-	"log"
-	"time"
-
 	"encoding/csv"
-	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 )
 
 type metric struct {
@@ -24,25 +20,17 @@ type metric struct {
 // Exporter implements the prometheus.Collector interface. It exposes the metrics
 // of a ipmi node.
 type Exporter struct {
-	IpmiBinary   string
-	Waitgroup    *sync.WaitGroup
-	metrics      map[string]*prometheus.GaugeVec
-	duration     prometheus.Gauge
-	totalScrapes prometheus.Counter
-	namespace    string
+	IpmiBinary string
+
+	metrics   map[string]*prometheus.GaugeVec
+	namespace string
 }
 
 // NewExporter instantiates a new ipmi Exporter.
-func NewExporter(ipmiBinary string, wg *sync.WaitGroup) *Exporter {
+func NewExporter(ipmiBinary string) *Exporter {
 	e := Exporter{
 		IpmiBinary: ipmiBinary,
-		Waitgroup:  wg,
 		namespace:  "ipmi",
-		duration: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: *namespace,
-			Name:      "exporter_last_scrape_duration_seconds",
-			Help:      "The last scrape duration.",
-		}),
 	}
 
 	e.metrics = map[string]*prometheus.GaugeVec{}
@@ -55,14 +43,12 @@ type error interface {
 	Error() string
 }
 
-func executeCommand(cmd string, wg *sync.WaitGroup) (string, error) {
+func executeCommand(cmd string) (string, error) {
 	parts := strings.Fields(cmd)
 	out, err := exec.Command(parts[0], parts[1]).Output()
 	if err != nil {
-		fmt.Println("error occured")
-		fmt.Printf("%s", err)
+		log.Errorf("error while calling ipmitool: %v", err)
 	}
-	wg.Done()
 	return string(out), err
 }
 
@@ -72,7 +58,7 @@ func convertValue(strfloat string, strunit string) (value float64, err error) {
 			strfloat = strings.Replace(strfloat, "0x", "", -1)
 			parsedValue, err := strconv.ParseUint(strfloat, 16, 32)
 			if err != nil {
-				log.Printf("could not translate hex: %v, %v", parsedValue, err)
+				log.Errorf("could not translate hex: %v, %v", parsedValue, err)
 			}
 			value = float64(parsedValue)
 		} else {
@@ -83,26 +69,26 @@ func convertValue(strfloat string, strunit string) (value float64, err error) {
 }
 
 func convertOutput(result [][]string) (metrics []metric, err error) {
-	for i := range result {
+	for _, res := range result {
 		var value float64
 		var currentMetric metric
 
-		for n := range result[i] {
-			result[i][n] = strings.TrimSpace(result[i][n])
+		for n := range res {
+			res[n] = strings.TrimSpace(res[n])
 		}
-		result[i][0] = strings.ToLower(result[i][0])
-		result[i][0] = strings.Replace(result[i][0], " ", "_", -1)
-		result[i][0] = strings.Replace(result[i][0], "-", "_", -1)
-		result[i][0] = strings.Replace(result[i][0], ".", "_", -1)
+		res[0] = strings.ToLower(res[0])
+		res[0] = strings.Replace(res[0], " ", "_", -1)
+		res[0] = strings.Replace(res[0], "-", "_", -1)
+		res[0] = strings.Replace(res[0], ".", "_", -1)
 
-		value, err = convertValue(result[i][1], result[i][2])
+		value, err = convertValue(res[1], res[2])
 		if err != nil {
-			log.Printf("could not parse ipmi output: %s", err)
+			log.Errorf("could not parse ipmi output: %s", err)
 		}
 
 		currentMetric.value = value
-		currentMetric.unit = result[i][2]
-		currentMetric.metricsname = result[i][0]
+		currentMetric.unit = res[2]
+		currentMetric.metricsname = res[0]
 
 		metrics = append(metrics, currentMetric)
 	}
@@ -110,13 +96,12 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 }
 
 func splitAoutput(output string) ([][]string, error) {
-
 	r := csv.NewReader(strings.NewReader(output))
 	r.Comma = '|'
 	r.Comment = '#'
 	result, err := r.ReadAll()
 	if err != nil {
-		log.Printf("could not parse ipmi output: %v", err)
+		log.Errorf("could not parse ipmi output: %v", err)
 	}
 	return result, err
 }
@@ -139,8 +124,6 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	for _, m := range e.metrics {
 		m.Describe(ch)
 	}
-
-	ch <- e.duration.Desc()
 }
 
 // Collect collects all the registered stats metrics from the ipmi node.
@@ -149,25 +132,20 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 	for _, m := range e.metrics {
 		m.Collect(metrics)
 	}
-
-	metrics <- e.duration
 }
 
 func (e *Exporter) collect() {
-	e.Waitgroup.Add(1)
-
-	now := time.Now().UnixNano()
-
-	output, err := executeCommand(e.IpmiBinary, e.Waitgroup)
-	splitted, err := splitAoutput(string(output))
-	convertedOutput, err := convertOutput(splitted)
-	createMetrics(e, convertedOutput)
-
-	e.duration.Set(float64(time.Now().UnixNano()-now) / 1000000000)
-
-	e.Waitgroup.Wait()
+	output, err := executeCommand(e.IpmiBinary + " sensor")
 	if err != nil {
-		log.Printf("could not retrieve ipmi metrics: %v", err)
-		return
+		log.Errorln(err)
 	}
+	splitted, err := splitAoutput(string(output))
+	if err != nil {
+		log.Errorln(err)
+	}
+	convertedOutput, err := convertOutput(splitted)
+	if err != nil {
+		log.Errorln(err)
+	}
+	createMetrics(e, convertedOutput)
 }

@@ -2,27 +2,26 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
-	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 )
 
 var (
 	listenAddress = flag.String("web.listen", ":9289", "Address on which to expose metrics and web interface.")
 	metricsPath   = flag.String("web.path", "/metrics", "Path under which to expose metrics.")
-	ipmiBinary    = flag.String("ipmi.path", "/usr/local/bin/ipmitool sensor", "Path to the ipmi binary")
+	ipmiBinary    = flag.String("ipmi.path", "ipmitool", "Path to the ipmi binary")
 	namespace     = flag.String("namespace", "ipmi", "Namespace for the IPMI metrics.")
 )
 
 func main() {
 	flag.Parse()
-	var wg sync.WaitGroup
+	err := prometheus.Register(NewExporter(*ipmiBinary))
+	if err != nil {
+		log.Fatalf("ipmitool didn't return any metrics (%v)", err)
+	}
 
-	prometheus.MustRegister(NewExporter(*ipmiBinary, &wg))
-
-	log.Printf("Starting Server: %s", *listenAddress)
 	handler := prometheus.Handler()
 	if *metricsPath == "" || *metricsPath == "/" {
 		http.Handle(*metricsPath, handler)
@@ -39,7 +38,8 @@ func main() {
 		})
 	}
 
-	err := http.ListenAndServe(*listenAddress, nil)
+	log.Infof("Starting Server: %s", *listenAddress)
+	err = http.ListenAndServe(*listenAddress, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
