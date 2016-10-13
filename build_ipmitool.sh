@@ -1,26 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
-set -e
-set -x
-
-PN=ipmitool
-PV=1.8.17
-P="${PN}-${PV}"
-
-SRC_URI="http://downloads.sourceforge.net/project/${PN}/${PN}/${PV}/${P}.tar.bz2"
-
-S="${PWD}/${P}"
-
-A="${SRC_URI##*/}"
-
-curl -L -o "${A}" "${SRC_URI}"
-
-tar -xjf "${A}"
-
-cd "${S}"
+mkdir -p ipmitool && cd ipmitool
+curl -L -s -o ipmitool.tar.bz2 http://downloads.sourceforge.net/project/ipmitool/ipmitool/1.8.17/ipmitool-1.8.17.tar.bz2
+tar -xjf ipmitool.tar.bz2
+cd ipmitool-1.8.17
 ./configure LDFLAGS=-static
 make
 make install
-
-cd /
-rm -rf "${S}"
+cd ../..
+rm -rf ipmitool
