@@ -8,8 +8,8 @@ case "$1" in
   configure)
     if which systemctl > /dev/null; then
       systemctl daemon-reload || :
-      systemctl enable nscd-exporter || :
-      systemctl restart nscd-exporter || :
+      systemctl enable ipmi-exporter || :
+      systemctl restart ipmi-exporter || :
     else
       echo "Couldn't find systemd to control IPMI Metrics Exporter, cannot proceed."
       echo "Open an issue and tell us about your system."
