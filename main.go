@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/lovoo/ipmi_exporter/collector"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
