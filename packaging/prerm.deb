@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+if [ $1 = "remove" ] ; then
+    if which systemctl > /dev/null; then
+      systemctl --no-reload disable ipmi-exporter || :
+      systemctl stop ipmi-exporter || :
+    fi
+fi

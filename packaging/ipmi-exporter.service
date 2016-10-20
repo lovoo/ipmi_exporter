@@ -1,0 +1,18 @@
+[Unit]
+Description=IPMI Metrics Exporter for Prometheus
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/tmp
+ExecStart=/usr/bin/ipmi_exporter
+RestartSec=1
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ipmi_exporter
+
+[Install]
+WantedBy=multi-user.target
