@@ -1,11 +1,15 @@
 language: go
 go:
   - 1.7
+
 script:
   - make build
   - make test
 
-before_deploy: make release-build
+before_deploy:
+  - gem install fpm package_cloud
+  - make release-build deb release-package
+
 deploy:
   provider: releases
   api_key:
