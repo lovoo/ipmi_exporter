@@ -10,7 +10,7 @@ IPMI Exporter for prometheus.io, written in Go.
 
 ## Docker Usage
 
-    docker run --privileged -d --name ipmi_exporter -p 9289:9289 lovoo/ipmi_exporter:latest
+    docker run --device=/dev/ipmi0 -d --name ipmi_exporter -p 9289:9289 lovoo/ipmi_exporter:latest
 
 ## Building
 
