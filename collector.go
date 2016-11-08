@@ -81,6 +81,7 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 		res[0] = strings.Replace(res[0], "-", "_", -1)
 		res[0] = strings.Replace(res[0], ".", "_", -1)
 		res[0] = strings.Replace(res[0], "+", "p", -1)
+		res[0] = strings.Replace(res[0], "%", "pct", -1)
 
 		value, err = convertValue(res[1], res[2])
 		if err != nil {
