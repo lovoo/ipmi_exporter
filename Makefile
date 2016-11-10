@@ -54,5 +54,5 @@ build-deb:
 
 .PHONY: release-package
 release-package:
-	package_cloud push lovoo/prometheus-exporters/debian/jessie build/*.deb
-	package_cloud push lovoo/prometheus-exporters/debian/stretch build/*.deb
+	package_cloud push LovooOS/prometheus-exporters/debian/jessie build/*.deb
+	package_cloud push LovooOS/prometheus-exporters/debian/stretch build/*.deb
