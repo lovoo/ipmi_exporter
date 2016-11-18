@@ -23,3 +23,12 @@ IPMI Exporter for prometheus.io, written in Go.
 3. Commit your changes: `git commit -am 'Add some feature'`
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request
+
+## Package repositories
+
+Debian repo quick install:
+curl -s https://packagecloud.io/install/repositories/LovooOS/prometheus-exporters/script.deb.sh | sudo bash
+
+You can find package repositories for other systems and how to add it to the system on [packagecloud.io/LovooOS/](https://packagecloud.io/LovooOS/prometheus-exporters/install):
+
+Special thanks to [packagecloud.io](https://packagecloud.io/) for hosting our packages.
