@@ -29,8 +29,8 @@
 		{
 			"checksumSHA1": "Ph+qmEo8RdBKBHZUhx0y5Oyk/U0=",
 			"path": "github.com/prometheus/client_golang/prometheus",
-			"revision": "5636dc67ae776adf5590da7349e70fbb9559972d",
-			"revisionTime": "2016-09-16T18:03:40Z"
+			"revision": "334af0119a8f8fb6af5bb950d535c482cac7f836",
+			"revisionTime": "2016-10-17T12:35:36Z"
 		},
 		{
 			"checksumSHA1": "DvwvOlPNAgRntBzt3b3OSRMS2N4=",

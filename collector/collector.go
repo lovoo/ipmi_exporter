@@ -1,8 +1,10 @@
-package main
+package collector
 
 import (
+	"bytes"
 	"encoding/csv"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -20,36 +22,26 @@ type metric struct {
 // Exporter implements the prometheus.Collector interface. It exposes the metrics
 // of a ipmi node.
 type Exporter struct {
-	IpmiBinary string
+	IPMIBinary string
 
-	metrics   map[string]*prometheus.GaugeVec
 	namespace string
 }
 
 // NewExporter instantiates a new ipmi Exporter.
 func NewExporter(ipmiBinary string) *Exporter {
-	e := Exporter{
-		IpmiBinary: ipmiBinary,
+	return &Exporter{
+		IPMIBinary: ipmiBinary,
 		namespace:  "ipmi",
 	}
-
-	e.metrics = map[string]*prometheus.GaugeVec{}
-
-	e.collect()
-	return &e
 }
 
-type error interface {
-	Error() string
-}
-
-func executeCommand(cmd string) (string, error) {
+func ipmiOutput(cmd string) ([]byte, error) {
 	parts := strings.Fields(cmd)
 	out, err := exec.Command(parts[0], parts[1]).Output()
 	if err != nil {
 		log.Errorf("error while calling ipmitool: %v", err)
 	}
-	return string(out), err
+	return out, err
 }
 
 func convertValue(strfloat string, strunit string) (value float64, err error) {
@@ -76,14 +68,6 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 		for n := range res {
 			res[n] = strings.TrimSpace(res[n])
 		}
-		res[0] = strings.ToLower(res[0])
-		res[0] = strings.Replace(res[0], " ", "_", -1)
-		res[0] = strings.Replace(res[0], "-", "_", -1)
-		res[0] = strings.Replace(res[0], ".", "_", -1)
-		res[0] = strings.Replace(res[0], "+", "p", -1)
-		res[0] = strings.Replace(res[0], "/", "_", -1)
-		res[0] = strings.Replace(res[0], "%", "pct", -1)
-
 		value, err = convertValue(res[1], res[2])
 		if err != nil {
 			log.Errorf("could not parse ipmi output: %s", err)
@@ -98,8 +82,8 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 	return metrics, err
 }
 
-func splitAoutput(output string) ([][]string, error) {
-	r := csv.NewReader(strings.NewReader(output))
+func splitOutput(impiOutput []byte) ([][]string, error) {
+	r := csv.NewReader(bytes.NewReader(impiOutput))
 	r.Comma = '|'
 	r.Comment = '#'
 	result, err := r.ReadAll()
@@ -109,40 +93,22 @@ func splitAoutput(output string) ([][]string, error) {
 	return result, err
 }
 
-func createMetrics(e *Exporter, metric []metric) {
-	for n := range metric {
-		e.metrics[metric[n].metricsname] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace:   "ipmi",
-			Name:        metric[n].metricsname,
-			Help:        metric[n].metricsname,
-			ConstLabels: map[string]string{"unit": metric[n].unit},
-		}, []string{"addr"})
-		var labels prometheus.Labels = map[string]string{"addr": "localhost"}
-		e.metrics[metric[n].metricsname].With(labels).Set(metric[n].value)
-	}
-}
-
-// Describe Describes all the registered stats metrics from the ipmi node.
+// Describe describes all the registered stats metrics from the ipmi node.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	for _, m := range e.metrics {
-		m.Describe(ch)
-	}
+	ch <- temperatures
+	ch <- fanspeed
+	ch <- voltages
+	ch <- intrusion
+	ch <- powersupply
 }
 
 // Collect collects all the registered stats metrics from the ipmi node.
-func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
-	e.collect()
-	for _, m := range e.metrics {
-		m.Collect(metrics)
-	}
-}
-
-func (e *Exporter) collect() {
-	output, err := executeCommand(e.IpmiBinary + " sensor")
+func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
+	output, err := ipmiOutput(e.IPMIBinary + " sensor")
 	if err != nil {
 		log.Errorln(err)
 	}
-	splitted, err := splitAoutput(string(output))
+	splitted, err := splitOutput(output)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -150,5 +116,24 @@ func (e *Exporter) collect() {
 	if err != nil {
 		log.Errorln(err)
 	}
-	createMetrics(e, convertedOutput)
+
+	for _, res := range convertedOutput {
+		push := func(m *prometheus.Desc) {
+			ch <- prometheus.MustNewConstMetric(m, prometheus.GaugeValue, res.value, res.metricsname)
+		}
+		switch strings.ToLower(res.unit) {
+		case "degrees c":
+			push(temperatures)
+		case "volts":
+			push(voltages)
+		case "rpm":
+			push(fanspeed)
+		}
+
+		if matches, err := regexp.MatchString("PS.* Status", res.metricsname); matches && err == nil {
+			push(powersupply)
+		} else if strings.HasSuffix(res.metricsname, "Chassis Intru") {
+			ch <- prometheus.MustNewConstMetric(intrusion, prometheus.GaugeValue, res.value)
+		}
+	}
 }
