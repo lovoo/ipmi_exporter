@@ -1,0 +1,65 @@
+CPU1 Temp        | 33.000     | degrees C  | ok    | 0.000     | 0.000     | 0.000     | 79.000    | 82.000    | 84.000
+CPU2 Temp        | 38.000     | degrees C  | ok    | 0.000     | 0.000     | 0.000     | 79.000    | 82.000    | 84.000
+System Temp      | 25.000     | degrees C  | ok    | -9.000    | -7.000    | -5.000    | 80.000    | 85.000    | 90.000
+Peripheral Temp  | 36.000     | degrees C  | ok    | -9.000    | -7.000    | -5.000    | 80.000    | 85.000    | 90.000
+PCH Temp         | 43.000     | degrees C  | ok    | -11.000   | -8.000    | -5.000    | 90.000    | 95.000    | 100.000
+P1-DIMMA1 TEMP   | 35.000     | degrees C  | ok    | 1.000     | 2.000     | 4.000     | 80.000    | 85.000    | 90.000
+P1-DIMMA2 TEMP   | 34.000     | degrees C  | ok    | 1.000     | 2.000     | 4.000     | 80.000    | 85.000    | 90.000
+P1-DIMMA3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMB1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMB2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMB3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMC1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMC2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMC3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMD1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMD2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P1-DIMMD3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMME1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMME2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMME3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMF1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMF2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMF3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMG1 TEMP   | 35.000     | degrees C  | ok    | 1.000     | 2.000     | 4.000     | 80.000    | 85.000    | 90.000
+P2-DIMMG2 TEMP   | 34.000     | degrees C  | ok    | 1.000     | 2.000     | 4.000     | 80.000    | 85.000    | 90.000
+P2-DIMMG3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMH1 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMH2 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+P2-DIMMH3 TEMP   | na         |            | na    | na        | na        | na        | na        | na        | na
+GPU1 Temp        | na         |            | na    | na        | na        | na        | na        | na        | na
+GPU2 Temp        | na         |            | na    | na        | na        | na        | na        | na        | na
+GPU3 Temp        | na         |            | na    | na        | na        | na        | na        | na        | na
+GPU4 Temp        | na         |            | na    | na        | na        | na        | na        | na        | na
+Xeon Phi1 Temp   | na         |            | na    | na        | na        | na        | na        | na        | na
+Xeon Phi2 Temp   | na         |            | na    | na        | na        | na        | na        | na        | na
+Xeon Phi3 Temp   | na         |            | na    | na        | na        | na        | na        | na        | na
+Xeon Phi4 Temp   | na         |            | na    | na        | na        | na        | na        | na        | na
+HDD Status       | na         | discrete   | na    | na        | na        | na        | na        | na        | na
+FAN1             | na         |            | na    | na        | na        | na        | na        | na        | na
+FAN2             | 3000.000   | RPM        | ok    | 300.000   | 450.000   | 600.000   | 18975.000 | 19050.000 | 19125.000
+FAN3             | 3150.000   | RPM        | ok    | 300.000   | 450.000   | 600.000   | 18975.000 | 19050.000 | 19125.000
+FAN4             | 3000.000   | RPM        | ok    | 300.000   | 450.000   | 600.000   | 18975.000 | 19050.000 | 19125.000
+FAN5             | na         |            | na    | na        | na        | na        | na        | na        | na
+FAN6             | na         |            | na    | na        | na        | na        | na        | na        | na
+FANA             | na         |            | na    | na        | na        | na        | na        | na        | na
+FANB             | na         |            | na    | na        | na        | na        | na        | na        | na
+VTT              | 0.992      | Volts      | ok    | 0.816     | 0.864     | 0.912     | 1.344     | 1.392     | 1.440
+CPU1 Vcore       | 0.848      | Volts      | ok    | 0.480     | 0.512     | 0.544     | 1.488     | 1.520     | 1.552
+CPU2 Vcore       | 0.800      | Volts      | ok    | 0.480     | 0.512     | 0.544     | 1.488     | 1.520     | 1.552
+VDIMM AB         | 1.488      | Volts      | ok    | 1.104     | 1.152     | 1.200     | 1.648     | 1.696     | 1.744
+VDIMM CD         | 1.488      | Volts      | ok    | 1.104     | 1.152     | 1.200     | 1.648     | 1.696     | 1.744
+VDIMM EF         | 1.488      | Volts      | ok    | 1.104     | 1.152     | 1.200     | 1.648     | 1.696     | 1.744
+VDIMM GH         | 1.504      | Volts      | ok    | 1.104     | 1.152     | 1.200     | 1.648     | 1.696     | 1.744
++1.1 V           | 1.104      | Volts      | ok    | 0.880     | 0.928     | 0.976     | 1.216     | 1.264     | 1.312
++1.5 V           | 1.488      | Volts      | ok    | 1.248     | 1.296     | 1.344     | 1.648     | 1.696     | 1.744
+3.3V             | 3.312      | Volts      | ok    | 2.640     | 2.784     | 2.928     | 3.648     | 3.792     | 3.936
++3.3VSB          | 3.360      | Volts      | ok    | 2.640     | 2.784     | 2.928     | 3.648     | 3.792     | 3.936
+5V               | 5.056      | Volts      | ok    | 4.096     | 4.288     | 4.480     | 5.504     | 5.696     | 6.912
++5VSB            | 5.056      | Volts      | ok    | 4.096     | 4.288     | 4.480     | 5.504     | 5.696     | 6.912
+12V              | 12.084     | Volts      | ok    | 10.176    | 10.494    | 10.812    | 13.250    | 13.568    | 13.886
+VBAT             | 3.216      | Volts      | ok    | 2.400     | 2.544     | 2.688     | 3.312     | 3.456     | 3.600
+HDD Status       | na         | discrete   | na    | na        | na        | na        | na        | na        | na
+Chassis Intru    | 0x0        | discrete   | 0x0000| na        | na        | na        | na        | na        | na
+PS1 Status       | 0x1        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
+PS2 Status       | 0x1        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
