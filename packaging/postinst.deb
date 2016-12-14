@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+  configure)
+    if which systemctl > /dev/null; then
+      systemctl daemon-reload || :
+      systemctl enable ipmi-exporter || :
+      systemctl restart ipmi-exporter || :
+    else
+      echo "Couldn't find systemd to control IPMI Metrics Exporter, cannot proceed."
+      echo "Open an issue and tell us about your system."
+      exit 1
+    fi
+    ;;
+
+  *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
