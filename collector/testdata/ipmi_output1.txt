@@ -63,3 +63,4 @@ HDD Status       | na         | discrete   | na    | na        | na        | na 
 Chassis Intru    | 0x0        | discrete   | 0x0000| na        | na        | na        | na        | na        | na
 PS1 Status       | 0x1        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
 PS2 Status       | 0x1        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
+I/O Board VRD    | 0x1        | discrete   | 0x0100| na        | na        | na        | na        | na        | na
