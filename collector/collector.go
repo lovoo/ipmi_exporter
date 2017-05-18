@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-    "strings"
+        "strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
