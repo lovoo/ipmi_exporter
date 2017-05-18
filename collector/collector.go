@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-	"strings"
+    "strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -82,6 +82,7 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 	return metrics, err
 }
 
+
 func splitOutput(impiOutput []byte) ([][]string, error) {
 	r := csv.NewReader(bytes.NewReader(impiOutput))
 	r.Comma = '|'
@@ -89,9 +90,24 @@ func splitOutput(impiOutput []byte) ([][]string, error) {
 	result, err := r.ReadAll()
 	if err != nil {
 		log.Errorf("could not parse ipmi output: %v", err)
+        return result, err
 	}
-	return result, err
+
+        keys := make(map[string]int)
+        var res [][]string
+        for _, v := range result {
+            key := v[0]
+            if _, ok := keys[key]; ok {
+                keys[key] += 1
+                v[0] = strings.TrimSpace(v[0]) + strconv.Itoa(keys[key])            
+            } else {
+                keys[key] = 1
+            }
+            res = append(res, v)
+        }
+        return res, err
 }
+
 
 // Describe describes all the registered stats metrics from the ipmi node.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
@@ -100,6 +116,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- voltages
 	ch <- intrusion
 	ch <- powersupply
+        ch <- current
 }
 
 // Collect collects all the registered stats metrics from the ipmi node.
@@ -128,6 +145,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			push(voltages)
 		case "rpm":
 			push(fanspeed)
+                case "watts":
+                        push(powersupply)
+                case "amps":
+                        push(current)
 		}
 
 		if matches, err := regexp.MatchString("PS.* Status", res.metricsname); matches && err == nil {
