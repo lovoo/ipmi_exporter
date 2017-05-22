@@ -2,7 +2,9 @@ package collector
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/csv"
+	"encoding/hex"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -37,7 +39,7 @@ func NewExporter(ipmiBinary string) *Exporter {
 
 func ipmiOutput(cmd string) ([]byte, error) {
 	parts := strings.Fields(cmd)
-	out, err := exec.Command(parts[0], parts[1]).Output()
+	out, err := exec.Command(parts[0], parts[1:]...).Output()
 	if err != nil {
 		log.Errorf("error while calling ipmitool: %v", err)
 	}
@@ -82,6 +84,28 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 	return metrics, err
 }
 
+// Convert raw IPMI tool output to decimal numbers
+func convertRawOutput(result [][]string) (metrics []metric, err error) {
+	for _, res := range result {
+		var value []byte
+		var currentMetric metric
+
+		for n := range res {
+			res[n] = strings.TrimSpace(res[n])
+		}
+		value, err := hex.DecodeString(res[1])
+		if err != nil {
+			log.Errorf("could not parse ipmi output: %s", err)
+		}
+		r, _ := binary.Uvarint(value)
+		currentMetric.value = float64(r)
+		currentMetric.unit = res[2]
+		currentMetric.metricsname = res[0]
+
+		metrics = append(metrics, currentMetric)
+	}
+	return metrics, err
+}
 
 func splitOutput(impiOutput []byte) ([][]string, error) {
 	r := csv.NewReader(bytes.NewReader(impiOutput))
@@ -99,7 +123,7 @@ func splitOutput(impiOutput []byte) ([][]string, error) {
             key := v[0]
             if _, ok := keys[key]; ok {
                 keys[key] += 1
-                v[0] = strings.TrimSpace(v[0]) + strconv.Itoa(keys[key])            
+                v[0] = strings.TrimSpace(v[0]) + strconv.Itoa(keys[key])
             } else {
                 keys[key] = 1
             }
@@ -156,5 +180,35 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		} else if strings.HasSuffix(res.metricsname, "Chassis Intru") {
 			ch <- prometheus.MustNewConstMetric(intrusion, prometheus.GaugeValue, res.value)
 		}
+	}
+
+	e.collectRaws(ch)
+}
+
+// Collect some Supermicro X8-specific metrics with raw commands
+func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
+	commands := [][]string{
+		{"InputPowerPSU1", " raw 0x06 0x52 0x07 0x78 0x01 0x97", "W"},
+		{"InputPowerPSU2", " raw 0x06 0x52 0x07 0x7a 0x01 0x97", "W"},
+	}
+	results := [][]string{}
+	for _, command := range commands {
+		output, err := ipmiOutput(e.IPMIBinary + command[1])
+		if err != nil {
+			log.Errorln(err)
+		}
+
+		results = append(results, []string{command[0], string(output), command[2]})
+	}
+
+	convertedRawOutput, err := convertRawOutput(results)
+	if err != nil {
+		log.Errorln(err)
+	}
+	for _, res := range convertedRawOutput {
+		push := func(m *prometheus.Desc) {
+			ch <- prometheus.MustNewConstMetric(m, prometheus.GaugeValue, res.value, res.metricsname)
+		}
+		push(powersupply)
 	}
 }
