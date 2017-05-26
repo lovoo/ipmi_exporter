@@ -3,10 +3,16 @@ PROJECT_NAME = ipmi_exporter
 VERSION      = $(shell git describe --tags || echo 0.0.0-dev)
 GO           = go
 GOX          = gox
+MEGACHECK    ?= $(GOPATH)/bin/megacheck
 GOX_ARGS     = -output="$(BUILD_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}" -osarch="linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 freebsd/amd64 freebsd/386 windows/386 windows/amd64"
+pkgs         = $(shell $(GO) list ./... | grep -v /vendor/)
+
+.PHONY: all
+all: format vet megacheck build test
 
 .PHONY: build
 build:
+	@echo ">> building binaries"
 	GOBIN=$(BUILD_DIR) $(GO) install -v -ldflags '-X main.Version=$(VERSION)'
 
 .PHONY: clean
@@ -15,7 +21,24 @@ clean:
 
 .PHONY: test
 test:
-	$(GO) test ./...
+	@echo ">> running tests"
+	@$(GO) test $(pkgs)
+
+.PHONY: format
+format:
+	@echo ">> formatting code"
+	@$(GO) fmt $(pkgs)
+
+.PHONY: vet
+vet:
+	@echo ">> vetting code"
+	@$(GO) vet $(pkgs)
+
+.PHONY: megacheck
+megacheck:
+	@echo ">> megacheck code"
+	@$(GO) get -u honnef.co/go/tools/cmd/megacheck
+	@$(MEGACHECK) $(pkgs)
 
 .PHONY: release-build
 release-build:
