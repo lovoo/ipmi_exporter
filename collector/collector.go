@@ -18,7 +18,6 @@ type metric struct {
 	metricsname string
 	value       float64
 	unit        string
-	addr        string
 }
 
 // Exporter implements the prometheus.Collector interface. It exposes the metrics
