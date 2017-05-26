@@ -156,6 +156,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		log.Errorln(err)
 	}
 
+	psRegex := regexp.MustCompile("PS(.*) Status")
+
 	for _, res := range convertedOutput {
 		push := func(m *prometheus.Desc) {
 			ch <- prometheus.MustNewConstMetric(m, prometheus.GaugeValue, res.value, res.metricsname)
@@ -173,7 +175,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			push(current)
 		}
 
-		if matches, err := regexp.MatchString("PS.* Status", res.metricsname); matches && err == nil {
+		if matches := psRegex.MatchString(res.metricsname); matches {
 			push(powersupply)
 		} else if strings.HasSuffix(res.metricsname, "Chassis Intru") {
 			ch <- prometheus.MustNewConstMetric(intrusion, prometheus.GaugeValue, res.value)
