@@ -7,6 +7,7 @@ import (
 	"github.com/lovoo/ipmi_exporter/collector"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 )
 
@@ -20,7 +21,7 @@ func main() {
 	flag.Parse()
 	prometheus.MustRegister(collector.NewExporter(*ipmiBinary))
 
-	handler := prometheus.Handler()
+	handler := promhttp.Handler()
 	if *metricsPath == "" || *metricsPath == "/" {
 		http.Handle(*metricsPath, handler)
 	} else {

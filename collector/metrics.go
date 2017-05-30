@@ -25,13 +25,13 @@ var (
 		[]string{"sensor"},
 		nil,
 	)
-	
-        current = prometheus.NewDesc(
-                prometheus.BuildFQName(namespace, "", "current"),
-                "Contains the current from IPMI",
-                []string{"sensor"},
-                nil,
-        )
+
+	current = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "current"),
+		"Contains the current from IPMI",
+		[]string{"sensor"},
+		nil,
+	)
 
 	intrusion = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "intrusion_status"),
