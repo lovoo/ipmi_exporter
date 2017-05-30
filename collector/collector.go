@@ -29,6 +29,11 @@ type Exporter struct {
 	namespace string
 }
 
+var rawSensors = [][]string{
+	{"InputPowerPSU1", " raw 0x06 0x52 0x07 0x78 0x01 0x97", "W", "enabled"},
+	{"InputPowerPSU2", " raw 0x06 0x52 0x07 0x7a 0x01 0x97", "W", "enabled"},
+}
+
 // NewExporter instantiates a new ipmi Exporter.
 func NewExporter(ipmiBinary string) *Exporter {
 	return &Exporter{
@@ -187,18 +192,18 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 // Collect some Supermicro X8-specific metrics with raw commands
 func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
-	commands := [][]string{
-		{"InputPowerPSU1", " raw 0x06 0x52 0x07 0x78 0x01 0x97", "W"},
-		{"InputPowerPSU2", " raw 0x06 0x52 0x07 0x7a 0x01 0x97", "W"},
-	}
 	results := [][]string{}
-	for _, command := range commands {
-		output, err := ipmiOutput(e.IPMIBinary + command[1])
-		if err != nil {
-			log.Errorln(err)
-		}
+	for i, command := range rawSensors {
+		if command[3] == "enabled" {
+			output, err := ipmiOutput(e.IPMIBinary + command[1])
+			if err != nil {
+				log.Infof("Error detected on quering %v. Disabling this sensor.", command[1])
+				rawSensors[i][3] = "disabled"
+				log.Errorln(err)
+			}
 
-		results = append(results, []string{command[0], string(output), command[2]})
+			results = append(results, []string{command[0], string(output), command[2]})
+		}
 	}
 
 	convertedRawOutput, err := convertRawOutput(results)
