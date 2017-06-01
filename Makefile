@@ -3,15 +3,18 @@ PROJECT_NAME = ipmi_exporter
 VERSION      = $(shell git describe --tags || echo 0.0.0-dev)
 GO           = go
 GOX          = gox
+PROMU        ?= $(GOPATH)/bin/promu
 MEGACHECK    ?= $(GOPATH)/bin/megacheck
 GOX_ARGS     = -output="$(BUILD_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}" -osarch="linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 freebsd/amd64 freebsd/386 windows/386 windows/amd64"
 pkgs         = $(shell $(GO) list ./... | grep -v /vendor/)
 
+PREFIX       ?= $(shell pwd)/build
+
 all: format vet megacheck build test
 
-build:
+build: $(PROMU)
 	@echo ">> building binaries"
-	GOBIN=$(BUILD_DIR) $(GO) install -v -ldflags '-X main.Version=$(VERSION)'
+	@CGO_ENABLED=0; $(PROMU) build --prefix $(PREFIX)
 
 clean:
 	rm -R $(BUILD_DIR)/* || true
@@ -68,9 +71,14 @@ release-package:
 	package_cloud push lovooOS/prometheus-exporters/debian/jessie build/*.deb
 	package_cloud push lovooOS/prometheus-exporters/debian/stretch build/*.deb
 
+$(GOPATH)/bin/promu promu:
+		@GOOS=$(shell uname -s | tr A-Z a-z) \
+			GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
+			$(GO) get -u github.com/prometheus/promu
+
 $(GOPATH)/bin/megacheck mega:
 	@GOOS=$(shell uname -s | tr A-Z a-z) \
 		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
 		$(GO) get -u honnef.co/go/tools/cmd/megacheck
 
-.PHONY: all build build-deb clean deb format $(GOPATH)/bin/megacheck mega release-build release-package test vet
+.PHONY: all build build-deb clean deb format $(GOPATH)/bin/megacheck mega $(GOPATH)/bin/promu promu release-build release-package test vet
