@@ -28,9 +28,8 @@ vet:
 	@echo ">> vetting code"
 	@$(GO) vet $(pkgs)
 
-megacheck:
+megacheck: $(MEGACHECK)
 	@echo ">> megacheck code"
-	@$(GO) get -u honnef.co/go/tools/cmd/megacheck
 	@$(MEGACHECK) $(pkgs)
 
 release-build:
@@ -69,4 +68,9 @@ release-package:
 	package_cloud push lovooOS/prometheus-exporters/debian/jessie build/*.deb
 	package_cloud push lovooOS/prometheus-exporters/debian/stretch build/*.deb
 
-.PHONY: all build build-deb clean deb format megacheck release-build release-package test vet
+$(GOPATH)/bin/megacheck mega:
+	@GOOS=$(shell uname -s | tr A-Z a-z) \
+		GOARCH=$(subst x86_64,amd64,$(patsubst i%86,386,$(shell uname -m))) \
+		$(GO) get -u honnef.co/go/tools/cmd/megacheck
+
+.PHONY: all build build-deb clean deb format $(GOPATH)/bin/megacheck mega release-build release-package test vet
