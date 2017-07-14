@@ -8,7 +8,7 @@ MEGACHECK    ?= $(GOPATH)/bin/megacheck
 GOX_ARGS     = -output="$(BUILD_DIR)/{{.Dir}}_{{.OS}}_{{.Arch}}" -osarch="linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 freebsd/amd64 freebsd/386 windows/386 windows/amd64"
 pkgs         = $(shell $(GO) list ./... | grep -v /vendor/)
 
-PREFIX       ?= $(shell pwd)/build
+PREFIX       ?= $(shell pwd)/build/ipmi_exporter
 
 all: format vet megacheck build test
 
