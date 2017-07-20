@@ -200,6 +200,7 @@ func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
 				log.Infof("Error detected on quering %v. Disabling this sensor.", command[1])
 				rawSensors[i][3] = "disabled"
 				log.Errorln(err)
+				continue
 			}
 
 			results = append(results, []string{command[0], string(output), command[2]})
