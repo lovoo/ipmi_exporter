@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/hex"
+	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -88,6 +89,10 @@ func convertOutput(result [][]string) (metrics []metric, err error) {
 	return metrics, err
 }
 
+func leftPadHexString(value string) string {
+	return fmt.Sprintf("%016v", value)
+}
+
 // Convert raw IPMI tool output to decimal numbers
 func convertRawOutput(result [][]string) (metrics []metric, err error) {
 	for _, res := range result {
@@ -97,11 +102,11 @@ func convertRawOutput(result [][]string) (metrics []metric, err error) {
 		for n := range res {
 			res[n] = strings.TrimSpace(res[n])
 		}
-		value, err := hex.DecodeString(res[1])
+		value, err := hex.DecodeString(leftPadHexString(res[1]))
 		if err != nil {
 			log.Errorf("could not parse ipmi output: %s", err)
 		}
-		r, _ := binary.Uvarint(value)
+		r := binary.BigEndian.Uint64(value)
 		currentMetric.value = float64(r)
 		currentMetric.unit = res[2]
 		currentMetric.metricsname = res[0]
