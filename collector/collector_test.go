@@ -24,3 +24,19 @@ func TestCollector(t *testing.T) {
 
 	fmt.Println(res)
 }
+
+func TestCollectRawOutput(t *testing.T) {
+	sampleResults := [][]string{
+		{"PSU2", "80", "W"}, // Hex value that is >= 0x80
+	}
+	res, err := convertRawOutput(sampleResults)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := float64(128)
+	if res[0].value != expected {
+		t.Fatalf("Expexted %f got %f", expected, res[0].value)
+	}
+}
