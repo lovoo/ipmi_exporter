@@ -2,6 +2,7 @@ package collector
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/csv"
 	"encoding/hex"
@@ -9,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -26,6 +28,13 @@ type Exporter struct {
 	IPMIBinary string
 
 	namespace string
+	timeout   int
+}
+
+// A structure to hold the output of ipmitool calls and the duration they executed for
+type IpmiResult struct {
+	output   []byte
+	execTime time.Duration
 }
 
 var rawSensors = [][]string{
@@ -34,20 +43,33 @@ var rawSensors = [][]string{
 }
 
 // NewExporter instantiates a new ipmi Exporter.
-func NewExporter(ipmiBinary string) *Exporter {
+func NewExporter(ipmiBinary string, timeout int) *Exporter {
 	return &Exporter{
 		IPMIBinary: ipmiBinary,
 		namespace:  "ipmi",
+		timeout:    timeout,
 	}
 }
 
-func ipmiOutput(cmd string) ([]byte, error) {
+func ipmiOutput(cmd string, timeout int) (res IpmiResult, err error) {
 	parts := strings.Fields(cmd)
-	out, err := exec.Command(parts[0], parts[1:]...).Output()
+	var out []byte
+	var err error
+
+	start := time.Now()
+	if timeout > 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Millisecond)
+		defer cancel()
+		out, err = exec.CommandContext(ctx, parts[0], parts[1:]...).Output()
+	} else {
+		out, err = exec.Command(parts[0], parts[1:]...).Output()
+	}
+	execTime := time.Now().Sub(start)
+
 	if err != nil {
 		log.Errorf("error while calling ipmitool: %v", err)
 	}
-	return out, err
+	return IpmiResult{out, execTime}, err
 }
 
 func convertValue(strfloat string, strunit string) (value float64, err error) {
@@ -144,15 +166,17 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- intrusion
 	ch <- powersupply
 	ch <- current
+	ch <- exectime
 }
 
 // Collect collects all the registered stats metrics from the ipmi node.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	output, err := ipmiOutput(e.IPMIBinary + " sensor")
+	res, err := ipmiOutput(e.IPMIBinary+" sensor", e.timeout)
+
 	if err != nil {
 		log.Errorln(err)
 	}
-	splitted, err := splitOutput(output)
+	splitted, err := splitOutput(res.output)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -187,15 +211,17 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	e.collectRaws(ch)
+	e.collectRaws(ch, res.execTime)
 }
 
 // Collect some Supermicro X8-specific metrics with raw commands
-func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
+func (e *Exporter) collectRaws(ch chan<- prometheus.Metric, ipmiTime time.Duration) {
 	results := [][]string{}
 	for i, command := range rawSensors {
 		if command[3] == "enabled" {
-			output, err := ipmiOutput(e.IPMIBinary + command[1])
+			res, err := ipmiOutput(e.IPMIBinary+command[1], e.timeout)
+			ipmiTime += res.execTime
+
 			if err != nil {
 				log.Infof("Error detected on quering %v. Disabling this sensor.", command[1])
 				rawSensors[i][3] = "disabled"
@@ -203,7 +229,7 @@ func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
 				continue
 			}
 
-			results = append(results, []string{command[0], string(output), command[2]})
+			results = append(results, []string{command[0], string(res.output), command[2]})
 		}
 	}
 
@@ -211,6 +237,8 @@ func (e *Exporter) collectRaws(ch chan<- prometheus.Metric) {
 	if err != nil {
 		log.Errorln(err)
 	}
+
+	ch <- prometheus.MustNewConstMetric(exectime, prometheus.GaugeValue, ipmiTime.Seconds() * 1000)
 	for _, res := range convertedRawOutput {
 		push := func(m *prometheus.Desc) {
 			ch <- prometheus.MustNewConstMetric(m, prometheus.GaugeValue, res.value, res.metricsname)

@@ -19,6 +19,7 @@ var (
 	metricsPath   = flag.String("web.path", "/metrics", "Path under which to expose metrics.")
 	ipmiBinary    = flag.String("ipmi.path", "ipmitool", "Path to the ipmi binary")
 	showVersion   = flag.Bool("version", false, "Show version information and exit")
+	timeout       = flag.Int("ipmi.timeout", -1, "How many milliseconds to allow ipmitools to run before cancelling.")
 )
 
 func init() {
@@ -36,7 +37,7 @@ func main() {
 	log.Infoln("Starting IPMI Exporter", version.Info())
 	log.Infoln("Build context", version.BuildContext())
 
-	prometheus.MustRegister(collector.NewExporter(*ipmiBinary))
+	prometheus.MustRegister(collector.NewExporter(*ipmiBinary, *timeout))
 
 	handler := promhttp.Handler()
 	if *metricsPath == "" || *metricsPath == "/" {
