@@ -46,4 +46,11 @@ var (
 		[]string{"PSU"},
 		nil,
 	)
+
+	exectime = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "", "exec_time"),
+		"How much time in milliseconds was spent executing ipmitools",
+		nil,
+		nil,
+	)
 )
