@@ -51,7 +51,7 @@ func NewExporter(ipmiBinary string, timeout int) *Exporter {
 	}
 }
 
-func ipmiOutput(cmd string, timeout int) (res IpmiResult, err error) {
+func ipmiOutput(cmd string, timeout int) (IpmiResult, error) {
 	parts := strings.Fields(cmd)
 	var out []byte
 	var err error
